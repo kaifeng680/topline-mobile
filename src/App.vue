@@ -5,11 +5,12 @@
 </template>
 
 <script>
-export default {
+// 按需注册 Vant 组件
 
+export default {
+  name: 'App'
 }
 </script>
 
 <style>
-
 </style>
