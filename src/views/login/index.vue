@@ -52,6 +52,7 @@
 
 <script>
 import { login } from '@/api/user'
+
 export default {
   name: 'LoginIndex',
   data () {
@@ -76,8 +77,9 @@ export default {
         }
         // 验证通过提交表单
         this.isLoginLoading = true
-        const { data } = await login(this.user)
-        console.log(data)
+        const res = await login(this.user)
+        // 把返回的token 保存到vuex容器里
+        this.$store.commit('setUser', res.data.data)
         this.$toast.success('登录成功!')
       } catch (err) {
         if (err.response && err.response.status === 400) {
