@@ -5,10 +5,12 @@
      <!-- 频道列表 -->
      <van-tabs v-model="active">
   <van-tab
-    v-for="channel in channels "
+   v-for="channel in channels "
    :key="channel.id"
-    :title="channel.name">
-     <!-- 文章列表 -->
+   :title="channel.name">
+   <!-- 下拉刷新组件   -->
+  <van-pull-refresh v-model="channel.pullDownLoading" @refresh="onRefresh">
+   <!-- 文章列表 -->
   <van-list
   v-model="channel.loading"
   :finished="channel.finished"
@@ -21,6 +23,7 @@
     :title="article.title"
   />
 </van-list>
+</van-pull-refresh>
 </van-tab>
 </van-tabs>
 
@@ -60,6 +63,7 @@ export default {
         channel.loading = false // 频道的上拉加载更多的loading 的状态
         channel.finished = false //  频道的加载结束的状态
         channel.timestamp = null // 用于获取下一页的时间戳
+        channel.pullDownLoading = false // 用来控制频道的下拉刷新 loading 值
       })
       this.channels = data.data.channels
     },
@@ -89,24 +93,23 @@ export default {
         // 还有数据，将本次得到的 preTimestamp 存储到当前频道，用于加载下一页数据
         currentChannel.timestamp = preTimestamp
       }
+    },
+    //  下拉 刷新时间
+    async  onRefresh () {
+      const currentChannel = this.currentChannel
+      // 1. 请求加载文章列表
+      const { data } = await getArticles({
+        channelId: currentChannel.id,
+        timestamp: Date.now(),
+        withTop: 1
+      })
+      // 2. 将得到的文章数据添加到当前的频道中, aritcles (顶部) 中
+      currentChannel.articles.unshift(...data.data.results)
+      // 3.  关闭当前频道下拉刷新的loading 的状态
+      currentChannel.pullDownLoading = false
+      // 4. 给出提示消息
+      this.$toast('刷新成功')
     }
-
-    // onLoad () {
-    //   // 异步更新数据
-    //   setTimeout(() => {
-    //     for (let i = 0; i < 10; i++) {
-    //       // 将数据添加到当前频道的,文章列表中
-    //       const articles = this.currentChannel.articles
-    //       articles.push(articles.length + 1)
-    //     }
-    //     // 加载状态结束
-    //     this.currentChannel.loading = false
-    //     // 数据全部加载完成
-    //     if (this.currentChannel.articles.length >= 20) {
-    //       this.currentChannel.finished = true
-    //     }
-    //   }, 2000)
-    // }
   }
 
 }
