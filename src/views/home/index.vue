@@ -1,32 +1,56 @@
 <template>
   <div class="home">
-     <!-- 导航栏 -->
-     <van-nav-bar title="首页"/>
-     <!-- 频道列表 -->
-     <van-tabs v-model="active">
-  <van-tab
-   v-for="channel in channels "
-   :key="channel.id"
-   :title="channel.name">
-   <!-- 下拉刷新组件   -->
-  <van-pull-refresh v-model="channel.pullDownLoading" @refresh="onRefresh">
-   <!-- 文章列表 -->
-  <van-list
-  v-model="channel.loading"
-  :finished="channel.finished"
-  finished-text="没有更多了"
-  @load="onLoad"
->
-  <van-cell
-    v-for="article in channel.articles"
-    :key="article.art_id.toString()"
-    :title="article.title"
-  />
-</van-list>
-</van-pull-refresh>
-</van-tab>
-</van-tabs>
-
+    <!-- 导航栏 -->
+    <van-nav-bar title="首页" fixed />
+    <!-- 频道列表 -->
+    <van-tabs v-model="active">
+      <van-tab v-for="channel in channels " :key="channel.id" :title="channel.name">
+        <!-- 下拉刷新组件   -->
+        <van-pull-refresh v-model="channel.pullDownLoading" @refresh="onRefresh">
+          <!-- 文章列表 -->
+          <van-list
+            v-model="channel.loading"
+            :finished="channel.finished"
+            finished-text="没有更多了"
+            @load="onLoad"
+          >
+            <van-cell
+              v-for="article in channel.articles"
+              :key="article.art_id.toString()"
+              :title="article.title"
+            >
+              <div slot="label">
+                <van-grid :border="false" :column-num="3">
+                  <van-grid-item v-for="(img, index) in article.cover.images" :key="index">
+                    <van-image height="80" :src="img" lazy-load />
+                  </van-grid-item>
+                </van-grid>
+                <div class="article-info">
+                  <div class="meta">
+                    <span>{{ article.aut_name }}</span>
+                    <span>{{ article.comm_count }}评论</span>
+                    <span>{{ article.pubdate | relativeTime }}</span>
+                  </div>
+                  <van-icon name="close" />
+                </div>
+              </div>
+            </van-cell>
+          </van-list>
+        </van-pull-refresh>
+      </van-tab>
+      <!-- 面包按钮 -->
+      <div slot="nav-right" class="wap-nav" @click="isChannelEditShow = true">
+        <van-icon name="wap-nav" size="24" />
+      </div>
+    </van-tabs>
+    <!-- 编辑频道 -->
+    <van-popup
+      v-model="isChannelEditShow"
+      position="bottom"
+      :style="{ height: '80%' }"
+      closeable
+      close-icon-position="top-left"
+    />
   </div>
 </template>
 
@@ -38,12 +62,13 @@ export default {
   data () {
     return {
       active: 0, // 控制当前激活的标签页
-      channels: [] // 频道列表
+      channels: [], // 频道列表
+      isChannelEditShow: false // 控制编辑频道的编辑和隐藏
     }
   },
   // 计算属性
   computed: {
-  //  获取到文章列表的active
+    //  获取到文章列表的active
     currentChannel () {
       // active 是动态的，active 改变也就意味着 currentChannel 也改变了
       return this.channels[this.active]
@@ -68,7 +93,7 @@ export default {
       this.channels = data.data.channels
     },
     async onLoad () {
-    // 1. 请求加载文章列表
+      // 1. 请求加载文章列表
       const currentChannel = this.currentChannel
       const { data } = await getArticles({
         channelId: currentChannel.id,
@@ -95,7 +120,7 @@ export default {
       }
     },
     //  下拉 刷新时间
-    async  onRefresh () {
+    async onRefresh () {
       const currentChannel = this.currentChannel
       // 1. 请求加载文章列表
       const { data } = await getArticles({
@@ -111,10 +136,38 @@ export default {
       this.$toast('刷新成功')
     }
   }
-
 }
 </script>
 
 <style lang='less' scoped>
+.home {
+  .van-tabs /deep/ .van-tabs__wrap--scrollable {
+    position: fixed;
+    top: 46px;
+    left: 0;
+    right: 16px;
+    z-index: 2;
+  }
 
+  .van-tabs /deep/ .van-tabs__content {
+    margin-top: 90px;
+  }
+}
+.article-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  .meta span {
+    margin-right: 10px;
+  }
+}
+// 面包按钮样式
+.wap-nav {
+  position: sticky;
+  right: 0;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  opacity: 0.8;
+}
 </style>

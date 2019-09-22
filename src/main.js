@@ -10,7 +10,7 @@ import { ValidationProvider
   ValidationObserver } from 'vee-validate'
 import * as rules from 'vee-validate/dist/rules' // 加载所有验证规则
 import zhCN from 'vee-validate/dist/locale/zh_CN'
-
+import { relativeTime } from '@/utils/date' // 注册过滤器
 // 按需注册 Vant 组件
 import {
   Button,
@@ -24,8 +24,15 @@ import {
   Tab,
   Tabs,
   List,
-  PullRefresh
+  PullRefresh,
+  Grid,
+  GridItem,
+  Image,
+  Icon,
+  Lazyload,
+  Popup
 } from 'vant'
+Vue.filter('relativeTime', relativeTime)
 Vue
   .use(Button)
   .use(Cell)
@@ -39,6 +46,12 @@ Vue
   .use(Tabs)
   .use(List)
   .use(PullRefresh)
+  .use(Grid)
+  .use(GridItem)
+  .use(Image)
+  .use(Icon)
+  .use(Lazyload)
+  .use(Popup)
 
 for (let rule in rules) {
   extend(rule, {
