@@ -41,7 +41,7 @@
         style="line-height: inherit;"
       />
     </van-cell>
-     <van-cell v-for="value in 5" :key="value" title="hello" >
+     <van-cell v-for="item in searchHistories" :key="item" :title="item" >
         <van-icon
         slot="right-icon"
         name="close"
@@ -56,13 +56,15 @@
 
 <script>
 import { getSuggestions } from '@/api/search'
+import { getItem, setItem } from '@/utils/storage'
 
 export default {
   name: 'SearchIndex',
   data () {
     return {
       searchText: '',
-      suggestions: []
+      suggestions: [],
+      searchHistories: getItem('search-histories') || [] // 搜索历史纪录
     }
   },
   // 监视属性
@@ -93,12 +95,35 @@ export default {
   methods: {
     onSearch (q) {
     // 跳转到搜索页面
-      this.$router.push({
-        name: 'search-result',
-        params: {
-          q
-        }
+      if (!q.trim().length) {
+        return
+      }
+
+      // 记录历史记录
+      const searchHistories = this.searchHistories
+
+      const index = searchHistories.findIndex(item => {
+        // 忽略空格、大小写
+        return item.trim().toLowerCase() === q.trim().toLowerCase()
       })
+
+      // 如果已存在,则将其移除
+      if (index !== -1) {
+        searchHistories.splice(index, 1)
+      }
+      // 在添加到顶部
+      searchHistories.unshift(q)
+
+      // 为了防止页面刷新,把数据保存到本地存储
+      setItem('search-histories', searchHistories)
+
+      // 跳转到搜索结果页面
+      // this.$router.push({
+      //   name: 'search-result',
+      //   params: {
+      //     q
+      //   }
+      // })
     },
     onCancel () {},
     highLight (str) {
