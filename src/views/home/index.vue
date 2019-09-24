@@ -1,7 +1,16 @@
 <template>
   <div class="home">
     <!-- 导航栏 -->
-    <van-nav-bar title="首页" fixed />
+    <van-nav-bar  fixed >
+     <van-button
+      class="search-btn"
+      slot="title"
+      round
+      type="info"
+      size="small"
+      @click="$router.push('/search')"
+     > 搜索</van-button>
+    </van-nav-bar>
     <!-- 频道列表 -->
     <van-tabs v-model="active">
       <van-tab v-for="channel in channels " :key="channel.id" :title="channel.name">
@@ -346,6 +355,10 @@ export default {
     position:absolute;
     top:-5px;
     right:-5px;
+  }
+  .search-btn{
+    width: 100%;
+    background: #5babfb
   }
 }
 </style>

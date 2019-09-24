@@ -1,0 +1,30 @@
+<!--
+  我想在指定的位置渲染一些自定义 HTML 标签
+  组件
+  如果想要在使用组件的时候自定义里面的元素标签，那么一定是使用插槽的方式
+  -->
+
+<!-- 如果不需要定义，直接使用这种方式 -->
+<!-- <van-cell title="单元格" value="内容" label="描述信息" /> -->
+
+<!-- 如果需要定义，则参照文档使用自定义插槽的方式 -->
+<van-cell title="单元格" value="内容" label="描述信息">
+    <!-- default 是默认插槽，可以省略不写 slot="defaut" -->
+    <!-- <div style="color: red" slot="default">default 内容</div> -->
+    <div style="color: red">default 内容</div>
+  
+    <!-- 任何元素都可以作为插槽内容，只需要在其上面标记 slot="xx" 即可 -->
+    <!-- <div style="color: green" slot="title">title 内容</div> -->
+    <span style="color: green" slot="title">title 内容</span>
+  
+  
+    <!-- <div style="color: blue" slot="label">label 内容</div> -->
+    <!-- 插槽内容也可以是一个组件 -->
+    <van-button
+      type="primary"
+      size="mini"
+      slot="label"
+    >迷你按钮</van-button>
+    <div style="color: black" slot="icon">icon 内容</div>
+    <div style="color: pink" slot="right-icon">right-icon 内容</div>
+  </van-cell>
