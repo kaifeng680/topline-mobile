@@ -12,7 +12,7 @@
   </form>
   <!-- /搜索框 -->
    <!-- 联想建议 -->
-<van-cell-group>
+<van-cell-group v-if="searchText">
   <van-cell
    icon="search"
    v-for="item in suggestions"
@@ -30,22 +30,31 @@
 </van-cell-group>
    <!-- /联想建议 -->
    <!-- 历史纪录 -->
- <van-cell-group>
+ <van-cell-group v-else>
     <van-cell title="历史纪录" >
-      <span style="margin:10px"> 全部删除 </span>
-      <span> 完成</span>
+      <template     v-if="isDeleteShow">
+      <span style="margin:10px"  @click="searchHistories=[]" > 全部删除 </span>
+      <span  @click="isDeleteShow=false" > 完成</span>
+      </template>
       <!-- 使用 right-icon 插槽来自定义右侧图标 -->
       <van-icon
+        v-else
         slot="right-icon"
         name="delete"
         style="line-height: inherit;"
+          @click="isDeleteShow=true"
       />
     </van-cell>
-     <van-cell v-for="item in searchHistories" :key="item" :title="item" >
+     <van-cell v-for="(item,index) in searchHistories"
+     :key="item"
+     :title="item"
+      @click="onSearch(item)" >
         <van-icon
         slot="right-icon"
         name="close"
         style="line-height: inherit;"
+        v-show="isDeleteShow"
+        @click="searchHistories.splice(index,1)"
       />
 
      </van-cell>
@@ -57,6 +66,7 @@
 <script>
 import { getSuggestions } from '@/api/search'
 import { getItem, setItem } from '@/utils/storage'
+import { debounce } from 'lodash'
 
 export default {
   name: 'SearchIndex',
@@ -64,12 +74,18 @@ export default {
     return {
       searchText: '',
       suggestions: [],
+      isDeleteShow: false,
       searchHistories: getItem('search-histories') || [] // 搜索历史纪录
     }
   },
   // 监视属性
+  // 只有在当前页面才可以监视
   watch: {
-    async searchText (newValue) {
+    // 当文本框发生变化时要执行的函数
+    // async searchText (newValue)
+    // 默认执行方式：立即执行，且立即执行
+    // 函数防抖完成 debounce（函数，时间）
+    searchText: debounce(async function (newValue) {
     // 判断非空
       if (!newValue.length) {
         return
@@ -90,6 +106,10 @@ export default {
       // })
 
       this.suggestions = options
+    }, 1000),
+    searchHistories (newValue) {
+      // 当数据发生改变，重新保存到本地存储
+      setItem('search-histories', newValue)
     }
   },
   methods: {
@@ -113,17 +133,22 @@ export default {
       }
       // 在添加到顶部
       searchHistories.unshift(q)
+      // 监视不是立即发生的，只有等函数执行完才去判断数据有没有改变
 
-      // 为了防止页面刷新,把数据保存到本地存储
+      // 虽然通过监视数据来处理数据的持久化 但是这里要手动储存一下这个数据
+      // 因为后面的函数会执行跳转，页面跳转会销毁当前页面(事件，watch，生命周期都被干掉了)
+      // 然后在加载新的页面
+
       setItem('search-histories', searchHistories)
 
       // 跳转到搜索结果页面
-      // this.$router.push({
-      //   name: 'search-result',
-      //   params: {
-      //     q
-      //   }
-      // })
+      // 路由跳转，会先销毁当前页面，然后在加载新的页面
+      this.$router.push({
+        name: 'search-result',
+        params: {
+          q
+        }
+      })
     },
     onCancel () {},
     highLight (str) {

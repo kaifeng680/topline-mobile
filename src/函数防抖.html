@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+   function fn (foo){
+       console.log('hello', foo)
+   }     
+    const newfn= debounce(fn,1000)
+    newfn(123)
+    newfn(666)
+    newfn('wod ')
+    //  如果在1s中重新调用
+
+
+
+    function debounce(callback,time){
+       let timer= null
+        return function (...args) {
+            window.clearTimeout(timer)
+           timer= setTimeout( ()=>{
+                callback(...args) // ...表示数组展开
+            },time )
+        }
+    }
+
+        
+   </script>
+</body>
+</html>
