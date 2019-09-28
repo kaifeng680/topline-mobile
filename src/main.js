@@ -31,7 +31,11 @@ import {
   Icon,
   Lazyload,
   Popup,
-  Search
+  Search,
+  Loading,
+  Dialog,
+  ActionSheet,
+  DatetimePicker
 } from 'vant'
 Vue.filter('relativeTime', relativeTime)
 Vue
@@ -54,6 +58,10 @@ Vue
   .use(Lazyload)
   .use(Popup)
   .use(Search)
+  .use(Loading)
+  .use(Dialog)
+  .use(ActionSheet)
+  .use(DatetimePicker)
 
 for (let rule in rules) {
   extend(rule, {

@@ -1,0 +1,186 @@
+<template>
+  <div>
+    <van-nav-bar
+      title="个人信息"
+      left-arrow
+      right-text="保存"
+      @click-right='onSaveProfile'
+    />
+     <!-- 用户信息 -->
+    <van-cell-group>
+      <van-cell title="头像" is-link @click="onShowFile" >
+        <van-image
+          round
+          width="30"
+          height="30"
+          :src="user.photo"
+        />
+      </van-cell>
+      <van-cell
+      title="昵称"
+       :value="user.name"
+       is-link
+       @click="isEditNameShow = true" />
+      <van-cell
+      title="性别"
+      :value="user.gender ===1? '女':'男'"
+      is-link
+      @click="isEditGenderShow = true"/>
+      <van-cell
+      title="生日"
+       :value="user.birthday"
+        is-link
+        @click="isEditBirthdayShow = true"
+         />
+    </van-cell-group>
+     <!--/ 用户信息 -->
+    <!-- 头像上传处罚的 file类型的input -->
+    <input hidden  type="file" ref="file">
+    <!--/ 头像上传处罚的 file类型的input -->
+
+    <!-- 编辑用户昵称 -->
+     <van-dialog
+      v-model="isEditNameShow"
+      title="用户昵称"
+      show-cancel-button
+      @confirm="user.name = inputUserName"
+      >
+      <van-field
+        :value="user.name"
+        placeholder="请输入用户名"
+        @input="onUserNameInput"
+      />
+    </van-dialog>
+    <!--/ 编辑用户昵称 -->
+
+    <!-- 编辑用户性别 -->
+    <van-action-sheet
+        v-model="isEditGenderShow"
+        :actions="[
+        { name: '男',value:0 },
+        { name: '女',value:1 }
+      ]"
+        @select="onGenderSelect"
+        cancel-text="取消"
+    />
+    <!-- /编辑用户性别 -->
+
+    <!-- 编辑用户生日 -->
+     <van-popup
+      v-model="isEditBirthdayShow"
+      position="bottom"
+      :style="{ height: '30%' }"
+    >
+      <van-datetime-picker
+        v-model="currentDate"
+        type="date"
+        :min-date="minDate"
+        @confirm="onDatetimeConfirm"
+        @cancel="isEditBirthdayShow = false"
+      />
+    </van-popup>
+    <!--/ 编辑用户生日 -->
+
+  </div>
+</template>
+
+<script>
+import { getProfile, updateUserPhoto, updateUserProfile } from '@/api/user'
+import { formatDate } from '@/utils/date'
+export default {
+  name: 'UserIndex',
+  data () {
+    return {
+      user: {}, // 用户个人资料
+      isEditNameShow: false, // 是否显示编辑昵称
+      inputUserName: '', // 存储编辑用户输入的内容
+      isEditGenderShow: false, // 是否显示编辑性别
+      isEditBirthdayShow: false,
+      minDate: new Date(1870, 1, 2),
+      currentDate: new Date()
+    }
+  },
+  computed: {
+    file () {
+      return this.$refs.file
+    }
+  },
+  // 初始化操作Dom
+  mounted () {
+    this.file.onchange = () => {
+      this.user.photo = window.URL.createObjectURL(this.file.files[0])
+    }
+  },
+  created () {
+    this.loadUserProfile()
+  },
+  methods: {
+    async loadUserProfile () {
+      const { data } = await getProfile()
+      this.user = data.data
+    },
+    onShowFile () {
+    //    手动触发 input 点击事件
+      this.file.click()
+    },
+    async onSaveProfile () {
+      // loading
+      const toast = this.$toast.loading({
+        duration: 0, // 持续展示 toast
+        forbidClick: true, // 禁用背景点击
+        loadingType: 'spinner',
+        message: '更新中'
+      })
+
+      try {
+        const photo = this.file.files[0]
+        if (photo) {
+          // 更新用户头像
+          await updateUserPhoto(this.file.files[0])
+        }
+
+        // 更新普通信息
+        await updateUserProfile(this.user)
+
+        // 关闭弹窗 loading
+        toast.clear()
+
+        // 提示成功
+        this.$toast.success('更新成功')
+      } catch (err) {
+        // if (err.response && err.response.status)
+        // 关闭弹窗 loading
+        toast.clear()
+
+        if (err.response && err.response.status === 409) {
+          this.$toast.fail('昵称已存在')
+        } else {
+          // 提示失败
+          this.$toast.fail('更新失败')
+        }
+      }
+    },
+    onUserNameInput (value) {
+      this.inputUserName = value
+    },
+    onGenderSelect (item) {
+    // 修改数据
+      this.user.gender = item.value
+      // 关闭弹窗
+      this.isEditGenderShow = false
+    },
+    onDatetimeConfirm (value) {
+      // 修改数据
+      this.user.birthday = formatDate(value)
+
+      // 关闭弹层
+      this.isEditBirthdayShow = false
+    }
+  }
+}
+</script>
+<style lang="less" scoped>
+    .van-nav-bar__text{
+        color: #fff
+    }
+</style>

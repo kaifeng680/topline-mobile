@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script src="../node_modules/lodash/lodash.js"></script>
+  <script>
+  function fn () {
+      console.log('``````````fire````')
+  }
+  // 参数1：函数
+    // 参数2：间隔时间
+    // 返回值：函数（它的功能和保证的 fn 的功能是一样的，但是被进行了节流处理）
+    // 第1次直接调用，之后的按照一定频率进行调用
+    const newFn = _.throttle(fn,2000)
+    newFn()
+    newFn()
+   
+    // 一上来就调用一次
+    // newFn()
+
+    // // 之后的调用，开始计时 1s
+    // newFn()
+
+     setInterval(()=>{
+         console.log('鼠标点击')
+         newFn()
+     },500)
+
+  </script>
+</body>
+</html>
